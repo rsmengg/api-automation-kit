@@ -52,13 +52,25 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default="docs/screenshots/api-kit-terminal.png")
     ap.add_argument("--width", type=int, default=1180)
+    ap.add_argument("--title", default="api-automation-kit — pytest")
+    ap.add_argument(
+        "--lines-file",
+        help="JSON 文件，内容为 [[文本, 颜色], ...]，覆盖内置的 SHELL_LINES",
+    )
     args = ap.parse_args()
+
+    lines = SHELL_LINES
+    if args.lines_file:
+        import json
+
+        with open(args.lines_file, encoding="utf-8") as f:
+            lines = json.load(f)
 
     font = load_font(20)
     lh = 32
     pad_top, pad_bottom = 66, 26
     pad_left = 28
-    height = pad_top + lh * len(SHELL_LINES) + pad_bottom
+    height = pad_top + lh * len(lines) + pad_bottom
 
     img = Image.new("RGB", (args.width, height), "#16161a")
     d = ImageDraw.Draw(img)
@@ -71,7 +83,7 @@ def main():
     d.text((args.width // 2 - 60, 12), "api-automation-kit — pytest", font=font, fill="#9a9aa6")
 
     y = pad_top
-    for text, color in SHELL_LINES:
+    for text, color in lines:
         if text.startswith("$"):
             d.text((pad_left, y), "$", font=font, fill="#4ec9b0")
             d.text((pad_left + 18, y), text[1:], font=font, fill=color)
